@@ -1,0 +1,26 @@
+5th June 2017
+
+CREATE TABLE `aide`.`meetings` ( `id` INT(11) NOT NULL AUTO_INCREMENT , `user_id` INT(11) NOT NULL , `agenda` VARCHAR(1000) NOT NULL , `location` VARCHAR(200) NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;
+ALTER TABLE `meetings` ADD `type` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '0: Inhouse, 1: Clients' AFTER `location`;
+ALTER TABLE `meetings` CHANGE `type` `type` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '0: Inhouse, 1: Clients, 2: Both';
+ALTER TABLE `meetings` ADD `client_attendees` VARCHAR(2000) NOT NULL COMMENT 'Emails of client users' AFTER `type`;
+ALTER TABLE `meetings` ADD `created` INT(11) NOT NULL AFTER `client_attendees`;
+CREATE TABLE `aide`.`attendees` ( `id` INT(11) NOT NULL AUTO_INCREMENT , `created` INT(11) NOT NULL , `meeting_id` INT NOT NULL , `user_id` INT NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;
+ALTER TABLE `attendees` ADD `attendee_id` INT(11) NOT NULL AFTER `user_id`;
+ALTER TABLE `attendees` CHANGE `user_id` `organiser_id` INT(11) NOT NULL;
+ALTER TABLE `attendees` ADD CONSTRAINT `meetings` FOREIGN KEY (`meeting_id`) REFERENCES `meetings`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE `attendees` ADD CONSTRAINT `foreign_user` FOREIGN KEY (`organiser_id`) REFERENCES `users`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE `attendees` ADD CONSTRAINT `users` FOREIGN KEY (`attendee_id`) REFERENCES `users`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE `meetings` ADD CONSTRAINT `user` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+6th June
+CREATE TABLE `aide`.`clients` ( `id` INT(11) NOT NULL AUTO_INCREMENT , `title` VARCHAR(200) NOT NULL , `status` INT(1) NOT NULL DEFAULT '0' COMMENT '0: disabled, 1: enabled' , `created` INT(11) NOT NULL , `launch_date` INT(11) NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;
+ALTER TABLE `users` ADD `client_id` INT(11) NOT NULL AFTER `created`;
+ALTER TABLE `users` ADD CONSTRAINT `foreign_client` FOREIGN KEY (`client_id`) REFERENCES `clients`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE `meetings` ADD `time` INT(11) NOT NULL AFTER `created`;
+
+17th June
+ALTER TABLE `meetings` ADD `enabled` TINYINT(1) NOT NULL DEFAULT '1' COMMENT '0: disabled, 1: enabled' AFTER `time`;
+ALTER TABLE `clients` ADD `modified` INT(11) NOT NULL AFTER `launch_date`, ADD `enabled` TINYINT(1) NOT NULL COMMENT '0: disabled, 1: enabled' AFTER `modified`, ADD `email_domain` VARCHAR(200) NOT NULL AFTER `enabled`;
+ALTER TABLE `clients` ADD `subscription_start_date` INT(11) NOT NULL AFTER `email_domain`, ADD `subscription_end_date` INT(11) NOT NULL AFTER `subscription_start_date`;
+ALTER TABLE `clients` DROP `enabled`;
